@@ -35,7 +35,8 @@ phases:
   # - command
   build:
     commands:
-      - go test -v  ./...
+      - docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - make test
       # - command
   #post_build:
   #commands:

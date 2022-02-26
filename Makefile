@@ -16,7 +16,10 @@ runweb:
 buildweb: 
 	CGO_ENABLED=0 go build -o server cmd/finder_web/main.go
 
-
+test: apiserver
+	go vet ./...
+	go test ./...
+	
 # Generate Go server stub from OpenAPI3 specification
 # see: https://github.com/OpenAPITools/openapi-generator
 # see: https://openapi-generator.tech/docs/generators/go-gin-server

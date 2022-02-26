@@ -1,0 +1,20 @@
+@startuml sequence
+
+title ApiServer
+hide footbox
+' skinparam handwritten true
+' skinparam monochrome true
+' actor, participant, database, collections, queue
+'
+actor http_client as client
+
+
+client -> apiserver: GET /api/find
+activate apiserver
+    alt 200 OK
+        client <-- apiserver: result
+    else 400 Bad Request
+        client <-- apiserver: error
+    end
+deactivate
+@enduml

@@ -1,8 +1,7 @@
 # Flight Finder
 
-[Layout](https://github.com/golang-standards/project-layout) 
-
 Find flight connections between two given airports.  
+Using OpenAPI3 + go-gin-server generator.  
 Using gin-gonic web framework.
 
 ## Run locally
@@ -10,6 +9,16 @@ Using gin-gonic web framework.
 ```bash
 docker build . -t mateuszmidor/flight-finder:latest
 docker run --rm --name=flight-finder -p=8080:80 mateuszmidor/flight-finder:latest
+```
+
+## Run locally as systemd service
+
+```bash
+sudo cp init/flight-finder.service /etc/systemd/system/
+sudo systemctl daemon-reload 
+sudo systemctl enable flight-finder
+sudo systemctl start flight-finder
+sudo systemctl status flight-finder
 ```
 
 ## Run on AWS EC2 or similar

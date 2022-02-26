@@ -1,11 +1,13 @@
 SPEC_PATH = api/openapi3.yaml
 APISERVER_PATH = cmd/finder_web/app/apiserver
-APISERVER_PORT = 8080
 
 default: apiserver
 
-docker: apiserver
+docker:
 	docker build . -t flight-finder
+	
+rundocker:
+	docker run --rm --name=flight-finder -p 8080:80 flight-finder:latest
 	
 runcli: 
 	go run cmd/finder_cli/main.go -flights_data=./assets
@@ -19,7 +21,7 @@ buildweb:
 test: apiserver
 	go vet ./...
 	go test ./...
-	
+
 # Generate Go server stub from OpenAPI3 specification
 # see: https://github.com/OpenAPITools/openapi-generator
 # see: https://openapi-generator.tech/docs/generators/go-gin-server
@@ -28,16 +30,8 @@ apiserver: ${SPEC_PATH}
 	docker run \
 		--rm \
 		-u $(shell id -u ${USER}):$(shell id -g ${USER}) \
-		-v "$(shell pwd):/local" \
-		openapitools/openapi-generator-cli:latest generate \
-		-i "/local/${SPEC_PATH}" \
-		-g go-gin-server \
-		--additional-properties=enumClassPrefix=true,serverPort=${APISERVER_PORT} \
-		--package-name "apiserver" \
-		-o "/local/${APISERVER_PATH}"
-	rm "${APISERVER_PATH}/main.go" # Remove default main.go
-	rm "${APISERVER_PATH}/go/api_default.go" # Remove default handlers
-	sed "/\/\/ Index/,+3  d" -i "${APISERVER_PATH}/go/routers.go" # Remove default "Index" handler
-
+		-v "$(shell pwd):/build" \
+		--entrypoint=/bin/bash \
+		openapitools/openapi-generator-cli:latest -c "cd /build && scripts/build_openapi3.sh"
 
 .PHONY: ${APISERVER_PATH}

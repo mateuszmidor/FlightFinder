@@ -45,6 +45,7 @@ ExecStop=docker stop flight-finder
 WantedBy=multi-user.target
 EOF
 
+# run systemd service
 systemctl daemon-reload    
 systemctl enable flight-finder
 systemctl start flight-finder

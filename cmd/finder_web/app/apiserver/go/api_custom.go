@@ -2,6 +2,7 @@ package apiserver
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -23,11 +24,31 @@ func Index(c *gin.Context) {
 	c.HTML(http.StatusOK, "map.html", nil)
 }
 
+func GetAirports(c *gin.Context) {
+	_airportsSVC, ok := c.Get("airports")
+	if !ok {
+		err := errors.New("airports svc is missing")
+		log.Print(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errorToJSON(err))
+		return
+	}
+
+	airportsSVC, ok := _airportsSVC.(*application.Airports)
+	if !ok {
+		err := fmt.Errorf("airports svc is of wrong type: %T", _airportsSVC)
+		log.Print(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errorToJSON(err))
+		return
+	}
+
+	getAirports(airportsSVC, c)
+}
+
 // FindFromToConnection - Flight connections by from and to airport IATA codes
 func FindFromToConnection(c *gin.Context) {
 	_finder, ok := c.Get("finder")
 	if !ok {
-		err := errors.New("finder is missing")
+		err := errors.New("finder svc is missing")
 		log.Print(err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, errorToJSON(err))
 		return
@@ -35,13 +56,29 @@ func FindFromToConnection(c *gin.Context) {
 
 	finder, ok := _finder.(*application.ConnectionFinder)
 	if !ok {
-		err := fmt.Errorf("finder is of wrong type: %T", _finder)
+		err := fmt.Errorf("finder svc is of wrong type: %T", _finder)
 		log.Print(err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, errorToJSON(err))
 		return
 	}
 
 	find(finder, c)
+}
+
+func getAirports(svc *application.Airports, c *gin.Context) {
+	apiAirports := []Airport{}
+	for _, a := range svc.AllAirports() {
+		airports := Airport{Code: a.Code(), Name: a.Name(), Nation: a.Nation(), NationFullName: "", Lon: float32(a.Longitude()), Lat: float32(a.Latitude())}
+		apiAirports = append(apiAirports, airports)
+	}
+	buff := &bytes.Buffer{}
+	json.NewEncoder(buff).Encode(apiAirports)
+	c.Render(
+		http.StatusOK,
+		render.Data{
+			ContentType: "application/json",
+			Data:        buff.Bytes(),
+		})
 }
 
 func find(finder *application.ConnectionFinder, c *gin.Context) {

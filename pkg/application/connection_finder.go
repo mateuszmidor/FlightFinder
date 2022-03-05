@@ -10,6 +10,10 @@ import (
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure"
 )
 
+type PathRenderer interface {
+	Render(paths []pathfinding.Path, flightsData *infrastructure.FlightsData)
+}
+
 type ConnectionFinder struct {
 	flightsData infrastructure.FlightsData
 	connections pathfinding.Connections

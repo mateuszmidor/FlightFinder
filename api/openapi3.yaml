@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   description: "Flight Finder server. See more: https://github.com/mateuszmidor/FlightFinder"
-  version: 0.1.0
+  version: 0.2.0
   title: FlightFinder
   license:
     name: MIT
@@ -27,6 +27,18 @@ paths:
   #           text/html:
   #             schema:
   #               type: string
+  /api/airports:
+    get:
+      summary: IATA airport codes
+      description: IATA airport codes
+      operationId: GetAirports
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Airports"
   /api/find:
     get:
       summary: Flight connections by from and to airport IATA codes
@@ -97,6 +109,10 @@ components:
           type: number
           format: float
           example: 50.038887
+    Airports:
+      type: array
+      items:
+        $ref: "#/components/schemas/Airport"
     Carrier:
       type: object
       properties:

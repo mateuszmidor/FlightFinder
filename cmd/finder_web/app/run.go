@@ -16,6 +16,7 @@ func Run(http_port, flights_data_dir, web_data_dir string) {
 	router.StaticFile("favicon.ico", path.Join(web_data_dir, "favicon.ico"))
 	router.Use(allowLocalSwaggerPreviewCORS)
 	router.Use(finder(flights_data_dir))
+	router.Use(airports(flights_data_dir))
 	for _, r := range apiserver.GetRoutes() {
 		router.Handle(r.Method, r.Pattern, r.HandlerFunc)
 	}
@@ -34,6 +35,16 @@ func finder(csv_dir string) func(*gin.Context) {
 
 	return func(c *gin.Context) {
 		c.Set("finder", finder)
+	}
+
+}
+
+func airports(csv_dir string) func(*gin.Context) {
+	repo := csv.NewFlightsDataRepoCSV(csv_dir)
+	airports := application.NewAirports(repo)
+
+	return func(c *gin.Context) {
+		c.Set("airports", airports)
 	}
 
 }

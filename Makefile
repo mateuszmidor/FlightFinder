@@ -1,24 +1,26 @@
-SPEC_PATH = api/openapi3.yaml
-APISERVER_PATH = cmd/finder_web/app/apiserver
+APISERVER = ./cmd/finder_web/app/apiserver/go/routers.go
+WEBSERVER = ./server
 
-default: apiserver
+default: ${APISERVER}
 
-docker:
+docker: 
 	docker build . -t flight-finder
 	
-rundocker:
+rundocker: 
 	docker run --rm --name=flight-finder -p 8080:80 flight-finder:latest
 	
-runcli: 
+runcli: ${APISERVER}
 	go run cmd/finder_cli/main.go -flights_data=./assets
 
-runweb: 
-	GIN_MODE=release go run cmd/finder_web/main.go -flights_data=./assets -web_data=./web
+runweb: ${APISERVER}
+	GIN_MODE=release go run cmd/finder_web/main.go -flights_data=./assets -web_data=./web -port=8080
 
-buildweb: 
-	CGO_ENABLED=0 go build -o server cmd/finder_web/main.go
+buildweb: ${WEBSERVER}
+${WEBSERVER}: ${APISERVER}
+	@echo "Building web server"
+	CGO_ENABLED=0 go build -o ${WEBSERVER} cmd/finder_web/main.go
 
-test: apiserver
+test: ${APISERVER}
 	go vet ./...
 	go test ./...
 
@@ -26,7 +28,8 @@ test: apiserver
 # see: https://github.com/OpenAPITools/openapi-generator
 # see: https://openapi-generator.tech/docs/generators/go-gin-server
 # see: https://openapi-generator.tech/docs/generators/go
-apiserver: ${SPEC_PATH}
+${APISERVER}:
+	@echo "Building OpenAPI3 server"
 	docker run \
 		--rm \
 		-u $(shell id -u ${USER}):$(shell id -g ${USER}) \
@@ -34,4 +37,4 @@ apiserver: ${SPEC_PATH}
 		--entrypoint=/bin/bash \
 		openapitools/openapi-generator-cli:latest -c "cd /build && scripts/build_openapi3.sh"
 
-.PHONY: ${APISERVER_PATH}
+.PHONY: default docker rundocker runcli runweb  buildweb test

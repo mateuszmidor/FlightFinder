@@ -28,7 +28,7 @@ test: ${APISERVER}
 # see: https://github.com/OpenAPITools/openapi-generator
 # see: https://openapi-generator.tech/docs/generators/go-gin-server
 # see: https://openapi-generator.tech/docs/generators/go
-${APISERVER}:
+${APISERVER}: ./api/openapi3.yaml
 	@echo "Building OpenAPI3 server"
 	docker run \
 		--rm \

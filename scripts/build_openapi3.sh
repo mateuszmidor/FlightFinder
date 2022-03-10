@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 # This script is intended to be executed from within "openapitools/openapi-generator-cli" Docker container
+set -e
+
 
 SPEC_PATH=api/openapi3.yaml
 APISERVER_PATH=cmd/finder_web/app/apiserver

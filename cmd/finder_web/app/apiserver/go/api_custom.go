@@ -2,7 +2,6 @@ package apiserver
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -13,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
 	"github.com/mateuszmidor/FlightFinder/pkg/application"
+	"github.com/mateuszmidor/FlightFinder/pkg/domain/airports"
 )
 
 func GetRoutes() Routes {
@@ -23,6 +23,44 @@ func GetRoutes() Routes {
 func Index(c *gin.Context) {
 	c.HTML(http.StatusOK, "map.html", nil)
 }
+
+func GetAirportByIATACode(c *gin.Context) {
+	_airportsSVC, ok := c.Get("airports")
+	if !ok {
+		err := errors.New("airports svc is missing")
+		log.Print(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errorToJSON(err))
+		return
+	}
+
+	airportsSVC, ok := _airportsSVC.(*application.Airports)
+	if !ok {
+		err := fmt.Errorf("airports svc is of wrong type: %T", _airportsSVC)
+		log.Print(err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, errorToJSON(err))
+		return
+	}
+
+	code := strings.ToUpper(c.Param("code"))
+	airport, err := airportsSVC.ByIATACode(code)
+
+	// FIND ERROR
+	if errors.Is(err, application.NotFoundError) {
+		log.Printf("ERROR: %v\n", err)
+		c.AbortWithStatusJSON(http.StatusNotFound, errorToJSON(err))
+		return
+	}
+	if err != nil {
+		log.Printf("ERROR: %v\n", err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, errorToJSON(err))
+		return
+	}
+
+	// FIND OK
+	c.JSON(200, fromAirport(airport))
+}
+
+
 
 func GetAirports(c *gin.Context) {
 	_airportsSVC, ok := c.Get("airports")
@@ -66,19 +104,15 @@ func FindFromToConnection(c *gin.Context) {
 }
 
 func getAirports(svc *application.Airports, c *gin.Context) {
-	apiAirports := []Airport{}
+	airports := []Airport{}
 	for _, a := range svc.AllAirports() {
-		airports := Airport{Code: a.Code(), Name: a.Name(), Nation: a.Nation(), NationFullName: "", Lon: float32(a.Longitude()), Lat: float32(a.Latitude())}
-		apiAirports = append(apiAirports, airports)
+		airports = append(airports, fromAirport(a))
 	}
-	buff := &bytes.Buffer{}
-	json.NewEncoder(buff).Encode(apiAirports)
-	c.Render(
-		http.StatusOK,
-		render.Data{
-			ContentType: "application/json",
-			Data:        buff.Bytes(),
-		})
+	c.JSON(200, airports)
+}
+
+func fromAirport(a airports.Airport) Airport {
+	return Airport{Code: a.Code(), Name: a.Name(), Nation: a.Nation(), NationFullName: a.Nation(), Lon: float32(a.Longitude()), Lat: float32(a.Latitude())}
 }
 
 func find(finder *application.ConnectionFinder, c *gin.Context) {

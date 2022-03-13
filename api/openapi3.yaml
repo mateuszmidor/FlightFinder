@@ -1,32 +1,38 @@
 openapi: 3.0.0
 info:
   description: "Flight Finder server. See more: https://github.com/mateuszmidor/FlightFinder"
-  version: 0.2.0
+  version: 0.3.0
   title: FlightFinder
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 paths:
-  # /:
-  #   get:
-  #     summary: IndexPage
-  #     description: IndexPage
-  #     operationId: Index
-  #     parameters:
-  #       - name: t
-  #         in: query
-  #         description: Connection FROM airport IATA code
-  #         required: true
-  #         schema:
-  #           type: string
-  #           default: tt
-  #     responses:
-  #       "200":
-  #         description: successful operation
-  #         content:
-  #           text/html:
-  #             schema:
-  #               type: string
+  /api/airports/{code}:
+    get:
+      summary: Get airport details by IATA code
+      description: Get airport details by IATA code
+      operationId: GetAirportByIATACode
+      parameters:
+        - name: code
+          in: path
+          description: Airport IATA code
+          required: true
+          example: KRK
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Airport"
+        "404":
+          description: Airport IATA code not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"                
   /api/airports:
     get:
       summary: IATA airport codes

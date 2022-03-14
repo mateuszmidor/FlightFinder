@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/render"
 	"github.com/mateuszmidor/FlightFinder/pkg/application"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/airports"
 )
@@ -134,12 +133,7 @@ func find(finder *application.ConnectionFinder, c *gin.Context) {
 
 	// FIND OK
 	log.Printf("%s -> %s: OK\n", from, to)
-	c.Render(
-		http.StatusOK,
-		render.Data{
-			ContentType: "application/json",
-			Data:        buff.Bytes(),
-		})
+	c.Data(200, "application/json", buff.Bytes())
 }
 
 func getFromAirportCode(r *http.Request) string {

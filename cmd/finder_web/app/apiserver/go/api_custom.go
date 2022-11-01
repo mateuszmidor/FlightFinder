@@ -59,8 +59,6 @@ func GetAirportByIATACode(c *gin.Context) {
 	c.JSON(200, fromAirport(airport))
 }
 
-
-
 func GetAirports(c *gin.Context) {
 	_airportsSVC, ok := c.Get("airports")
 	if !ok {

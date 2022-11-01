@@ -54,10 +54,39 @@ systemctl status flight-finder
 
 ## Run on AWS BeanStalk
 
-What BeanStalk does with your code uploaded as ZIP archive:
-- unzip the archive files
-- `go build application.go && ./application`
-- expose the application on port 5000
+- using platform GO  
+    What BeanStalk does with your code uploaded as ZIP archive:
+    - unzip the archive files
+    - `go build application.go && ./application`
+    - expose the application on port 5000
+
+    , so you just need to make a ZIP archive with the app and use it for creating BeanStalk application in AWS Console:
+
+    ```sh
+    zip -r flight-finder-platform_go-port5000-v1.zip assets/airports.csv.gz assets/nations.csv.gz assets/segments.csv.gz go.mod go.sum web/ pkg/ cmd/ application.go
+    ```
+- using platform Docker  
+    What BeanStalk does with your code uploaded as ZIP archive:
+    - unzip the archive files
+    - `docker build . -t flight-finder`
+    - `docker run -p=80:80 flight-finder`
+
+    , so you just need to make a ZIP archive with the app and use it for creating BeanStalk application in AWS Console:
+    ```sh
+    zip -r flight-finder-platform_docker-port80-v1.zip assets/airports.csv.gz assets/nations.csv.gz assets/segments.csv.gz go.mod go.sum web/ scripts/ api/ pkg/ cmd/ Dockerfile
+    ``` 
+
+## API
+
+- list all airports
+    ```sh
+    curl 'http://localhost:8080/api/airports'
+    ```
+
+- find connections
+    ```sh 
+    curl 'http://localhost:8080/api/find?from=gdn&to=sez&maxsegmentcount=2'
+    ```
 
 ## Showcase
 

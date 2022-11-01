@@ -218,11 +218,31 @@
             }
         }
 
+        function markAirportsListOnEarth(airports) {
+            createEarthMap()
+            var uniqueAirports = new Map();
+
+            // actually add unique airports to map
+            for (const airport of airports) {
+                var marker = WE.marker([airport.lat, airport.lon]).addTo(earth);
+                marker.bindPopup('<strong>' + airport.code + '</strong><br>' + airport.name + ', ' + airport.nation_full_name, { maxWidth: 120, closeButton: false });
+                // console.log(el);
+            }
+        }
+
+
         function setFindResults(paths) {
             jsonPaths = paths
             renderJSONPathsAsHTML(paths)
             markAirportsOnEarth(paths)
         }
+
+        function setAirportsResults(airports) {
+            jsonAirports = airports
+            // renderJSONPathsAsHTML(paths)
+            markAirportsListOnEarth(airports)
+        }
+
 
         var onFindConnections = function () {
             $.ajax({
@@ -249,6 +269,33 @@
                 }
             });
         }
+
+        var onShowAirports = function () {
+            $.ajax({
+                type: 'GET',
+                url: 'api/airports',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: {},
+                error: function (response) {
+                    console.log(response);
+                    if (response.status == 400) {
+                        alert(response.responseJSON.error);
+                    }
+                    else {
+                        alert(response.statusText);
+                    }
+                },
+                success: function (airportList) {
+                    if (airportList.length == 0) {
+                        alert("no airports available")
+                    } else {
+                        setAirportsResults(airportList);
+                    }
+                }
+            });
+        }
+
 
         //]]>
     </script>
@@ -285,7 +332,11 @@
                     <div class="form-group">
                         <findbutton class="btn btn-danger" onclick="onFindConnections()">
                             <span class="glyphicon glyphicon-search"></span>
-                            Szukaj!
+                            Connections!
+                        </findbutton>
+                        <findbutton class="btn btn-danger" onclick="onShowAirports()">
+                            <span class="glyphicon glyphicon-search"></span>
+                            Airports!
                         </findbutton>
                     </div>
                 </form>

@@ -42,7 +42,6 @@ phases:
     commands:
       - docker login -u $DOCKER_USER -p $DOCKER_PASS
       - make
-      # - command
   post_build:
     commands:
       - make test
@@ -56,7 +55,7 @@ phases:
 #discard-paths: yes
 #file-format: JunitXml | CucumberJson
 
-# @MM: Pass the generated cmd/finder_web/app/apiserver to the Deploy stage in CodePipeline
+# @MM: Pass the entire project together with the generated cmd/finder_web/app/apiserver to the Deploy stage in CodePipeline
 artifacts:
   files:
     - "**/*"

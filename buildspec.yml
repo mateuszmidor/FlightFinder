@@ -1,4 +1,8 @@
 # This file is intended for AWS CodeBuild service
+# CodeBuild project config:
+# image: Managed Image, ubuntu, aws/codebuild/standard:6.0
+# privileged: true - needed to connect to Docker daemon
+# environment variables: DOCKE_USER and DOCKER PASS
 version: 0.2
 #env:
 #variables:
@@ -51,10 +55,9 @@ phases:
 #base-directory: location
 #discard-paths: yes
 #file-format: JunitXml | CucumberJson
-#artifacts:
-#files:
-# - location
-# - location
+artifacts:
+  files:
+    - "**/*"
 #name: $(date +%Y-%m-%d)
 #discard-paths: yes
 #base-directory: location

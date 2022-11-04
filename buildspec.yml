@@ -24,7 +24,7 @@ phases:
     #If you use the Ubuntu standard image 2.0 or later, you must specify runtime-versions.
     #If you specify runtime-versions and use an image other than Ubuntu standard image 2.0, the build fails.
     runtime-versions:
-      golang: 1.16
+      golang: 1.18
       # name: version
     # commands:
     # - command
@@ -36,6 +36,7 @@ phases:
   build:
     commands:
       - docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - make
       - make test
       # - command
   #post_build:

@@ -25,4 +25,4 @@ hooks:
   ValidateService:
     - location: scripts/aws_code_deploy_validate.sh
       timeout: 3600
-      runas: codedeployuser
+      # runas: codedeployuser

@@ -22,8 +22,7 @@ hooks:
     - location: scripts/aws_code_deploy_stop.sh
       timeout: 60
       runas: root
-
-  # ValidateService:
-  #   - location: Scripts/MonitorService.sh
-  #     timeout: 3600
-  #     runas: codedeployuser
+  ValidateService:
+    - location: scripts/aws_code_deploy_validate.sh
+      timeout: 3600
+      runas: codedeployuser

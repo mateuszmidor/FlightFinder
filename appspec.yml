@@ -8,21 +8,20 @@ files:
 file_exists_behavior: OVERWRITE
 hooks:
   BeforeInstall:
-    - location: scripts/aws_code_deploy_install.sh
+    - location: aws_codedeploy/install.sh
       timeout: 60
       runas: root
-  # AfterInstall:
-  #   - location: Scripts/RunResourceTests.sh
-  #     timeout: 180
+  AfterInstall:
+    - location: aws_codedeploy/build.sh
+      timeout: 60
   ApplicationStart:
-    - location: scripts/aws_code_deploy_start.sh
-      timeout: 60
-      runas: root
-  ApplicationStop:
-    - location: scripts/aws_code_deploy_stop.sh
+    - location: aws_codedeploy/start.sh
       timeout: 60
       runas: root
   ValidateService:
-    - location: scripts/aws_code_deploy_validate.sh
-      timeout: 3600
-      # runas: codedeployuser
+    - location: aws_codedeploy/validate.sh
+      timeout: 60
+  ApplicationStop:
+    - location: aws_codedeploy/stop.sh
+      timeout: 60
+      runas: root

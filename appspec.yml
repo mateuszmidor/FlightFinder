@@ -14,6 +14,7 @@ hooks:
   AfterInstall:
     - location: aws_codedeploy/2-build.sh
       timeout: 60
+      runas: root # run as root or "go: module cache not found: neither GOMODCACHE nor GOPATH is set"
   ApplicationStart:
     - location: aws_codedeploy/3-start.sh
       timeout: 60

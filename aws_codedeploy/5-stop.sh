@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -x
 
 # This file is intended for AWS CodeDeploy service
 # Referenced by "appspec.yml"

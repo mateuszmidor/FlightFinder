@@ -1,3 +1,14 @@
-# CodeDeploy
+# AWS CodeDeploy
 
-EC2 logs from hooks: `/opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log`
+Files in this folder are scripts for Application Lifecycle Hooks, referenced from `appspec.yml`.
+
+## Troubleshooting
+
+### Application Lifecycle Logs (install/start/validate/stop)
+
+- on EC2 instance: `/opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log`
+
+### CodeDeploy Agent
+
+- agent service status: `systemctl status codedeploy-agent`
+- agent service logs: `journalctl -u codedeploy-agent`

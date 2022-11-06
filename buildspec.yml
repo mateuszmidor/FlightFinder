@@ -1,8 +1,8 @@
 # This file is intended for AWS CodeBuild service
 # CodeBuild project config:
-# image: Managed Image, ubuntu, aws/codebuild/standard:6.0
-# privileged: true - needed to connect to Docker daemon
-# environment variables: DOCKE_USER and DOCKER PASS
+#  - image: Managed Image, ubuntu, aws/codebuild/standard:6.0
+#  - privileged: true - needed to connect to Docker daemon
+#  - environment variables: DOCKE_USER and DOCKER PASS; downloading image from DockerHub on AWS requires authentication
 
 version: 0.2
 #env:

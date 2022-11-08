@@ -4,16 +4,22 @@ Find flight connections between two given airports.
 Using OpenAPI3 + go-gin-server generator.  
 Using gin-gonic web framework.
 
-## Run locally
+## Run locally from source
 
-```bash
+```sh
+go run cmd/finder_web/main.go -port=8080 -flights_data=./assets -web_data=./web
+```
+
+## Run locally with docker
+
+```sh
 docker build . -t mateuszmidor/flight-finder:latest
 docker run --rm --name=flight-finder -p=8080:80 mateuszmidor/flight-finder:latest
 ```
 
 ## Run locally as systemd service
 
-```bash
+```sh
 sudo cp init/flight-finder.service /etc/systemd/system/
 sudo systemctl daemon-reload 
 sudo systemctl enable flight-finder
@@ -23,8 +29,8 @@ sudo systemctl status flight-finder
 
 ## Run on AWS EC2 or similar
 
-```bash
-#!/usr/bin/env bash
+```sh
+#!/usr/bin/env sh
 
 # install docker
 curl -fsSL https://get.docker.com | sh
@@ -75,6 +81,12 @@ systemctl status flight-finder
     ```sh
     zip -r flight-finder-platform_docker-port80-v1.zip assets/airports.csv.gz assets/nations.csv.gz assets/segments.csv.gz go.mod go.sum web/ scripts/ api/ pkg/ cmd/ Dockerfile
     ``` 
+
+## Deploy using AWS CodeDeploy
+
+```sh
+./aws_codedeploy/deploy.sh
+```
 
 ## API
 

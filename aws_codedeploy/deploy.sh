@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+#
+# CodeDeploy helper script
+#
+
 set -e # fail fast
 
 

@@ -1,6 +1,6 @@
 # AWS CodeDeploy
 
-Files in this folder are scripts for Application Lifecycle Hooks, referenced from `appspec.yml`.
+Numbered files in this folder are scripts for Application Lifecycle Hooks, referenced from `appspec.yml`.
 
 ## Troubleshooting
 
@@ -8,7 +8,7 @@ Files in this folder are scripts for Application Lifecycle Hooks, referenced fro
 
 - on EC2 instance: `/opt/codedeploy-agent/deployment-root/deployment-logs/codedeploy-agent-deployments.log`
 
-### CodeDeploy Agent
+### CodeDeploy Agent (on EC2)
 
 - agent service status: `systemctl status codedeploy-agent`
 - agent service logs: `journalctl -u codedeploy-agent`

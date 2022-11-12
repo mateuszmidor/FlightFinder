@@ -2,19 +2,22 @@
 
 Find flight connections between two given airports.  
 Using OpenAPI3 + go-gin-server generator.  
-Using gin-gonic web framework.
+Using gin-gonic web framework.   
+Using AWS CloudWatch Metrics (default region `us-east-1`):
+- this requires `cloudwatch:PutMetricData` IAM permission or no metrics will be sent
+- if configured, generates metrics in `FlightFinder` CloudWatch Merics namespace
 
 ## Run locally from source
 
 ```sh
-go run cmd/finder_web/main.go -port=8080 -flights_data=./assets -web_data=./web
+go run cmd/finder_web/main.go -port=8080 -flights_data=./assets -web_data=./web -aws_region=us-east-1
 ```
 
 ## Run locally with docker
 
 ```sh
 docker build . -t mateuszmidor/flight-finder:latest
-docker run --rm --name=flight-finder -p=8080:80 mateuszmidor/flight-finder:latest
+docker run --rm --name=flight-finder -p=8080:80 -v $HOME/.aws:/root/.aws mateuszmidor/flight-finder:latest
 ```
 
 ## Run locally as systemd service
@@ -44,7 +47,7 @@ After=network.target
 [Service] 
 Type=simple 
 Restart=always  
-ExecStart=docker run --rm --name=flight-finder -p=80:80 mateuszmidor/flight-finder:latest
+ExecStart=docker run --rm --name=flight-finder -p=80:80 -v $HOME/.aws:/root/.aws mateuszmidor/flight-finder:latest
 ExecStop=docker stop flight-finder 
                                    
 [Install] 

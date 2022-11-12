@@ -3,14 +3,16 @@ package app
 import (
 	"log"
 	"path"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	apiserver "github.com/mateuszmidor/FlightFinder/cmd/finder_web/app/apiserver/go"
 	"github.com/mateuszmidor/FlightFinder/pkg/application"
+	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure/aws"
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure/csv"
 )
 
-func Run(http_port, flights_data_dir, web_data_dir string) {
+func Run(http_port, flights_data_dir, web_data_dir string, metrics application.MetricsClient) {
 	router := gin.Default()
 	router.LoadHTMLGlob(path.Join(web_data_dir, "*.html"))
 	router.StaticFile("favicon.ico", path.Join(web_data_dir, "favicon.ico"))
@@ -18,9 +20,29 @@ func Run(http_port, flights_data_dir, web_data_dir string) {
 	router.Use(finder(flights_data_dir))
 	router.Use(airports(flights_data_dir))
 	for _, r := range apiserver.GetRoutes() {
-		router.Handle(r.Method, r.Pattern, r.HandlerFunc)
+		handler := handlerWithMetrics(metrics, r.Method, r.Pattern, r.HandlerFunc)
+		router.Handle(r.Method, r.Pattern, handler)
 	}
 	log.Fatal(router.Run(":" + http_port))
+}
+
+func MakeMetricsClient(aws_region string) application.MetricsClient {
+	var client application.MetricsClient
+	client, err := aws.NewMetricsClient(aws_region)
+	if err != nil {
+		log.Printf("AWS CloudWatch not available, will push no metrics. Error: %v", err)
+		client = &application.NullMericsClient{}
+	}
+	return client
+}
+
+func handlerWithMetrics(metrics application.MetricsClient, method string, pattern string, handler gin.HandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		handler(c)
+		duration := time.Since(start)
+		metrics.PutRequestMetrics(pattern, method, duration)
+	}
 }
 
 func allowLocalSwaggerPreviewCORS(c *gin.Context) {
@@ -36,7 +58,6 @@ func finder(csv_dir string) func(*gin.Context) {
 	return func(c *gin.Context) {
 		c.Set("finder", finder)
 	}
-
 }
 
 func airports(csv_dir string) func(*gin.Context) {

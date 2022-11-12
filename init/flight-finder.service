@@ -5,7 +5,7 @@ After=network.target
 [Service] 
 Type=simple 
 Restart=always  
-ExecStart=docker run --rm --name=flight-finder -p=80:80 mateuszmidor/flight-finder:latest
+ExecStart=docker run --rm --name=flight-finder -p=80:80 -v $HOME/.aws:/root/.aws mateuszmidor/flight-finder:latest
 ExecStop=docker stop flight-finder 
                                    
 [Install] 

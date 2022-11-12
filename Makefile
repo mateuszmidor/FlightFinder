@@ -4,16 +4,16 @@ WEBSERVER = ./server
 default: ${APISERVER}
 
 docker: 
-	docker build . -t flight-finder
+	docker build . -t flight-finder:latest
 	
 rundocker: 
-	docker run --rm --name=flight-finder -p 8080:80 flight-finder:latest
+	docker run --rm --name=flight-finder -p 8080:80 -v $HOME/.aws:/root/.aws flight-finder:latest
 	
 runcli: ${APISERVER}
 	go run cmd/finder_cli/main.go -flights_data=./assets
 
 runweb: ${APISERVER}
-	GIN_MODE=release go run cmd/finder_web/main.go -flights_data=./assets -web_data=./web -port=8080
+	GIN_MODE=release go run cmd/finder_web/main.go -flights_data=./assets -web_data=./web -port=8080 -aws_region=us-east-1
 
 buildweb: ${WEBSERVER}
 ${WEBSERVER}: ${APISERVER}

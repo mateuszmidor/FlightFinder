@@ -13,7 +13,7 @@ hooks:
       runas: root
   AfterInstall:
     - location: aws_codedeploy/2-build.sh
-      timeout: 180 # AWS CloudWatch module for GO is heavy
+      timeout: 300 # aws/aws-sdk-go and gin-contrib/cache module for GO is heavy
       runas: root # run as root or "go: module cache not found: neither GOMODCACHE nor GOPATH is set"
   ApplicationStart:
     - location: aws_codedeploy/3-start.sh

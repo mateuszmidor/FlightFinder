@@ -2,17 +2,19 @@ package app
 
 import (
 	"log"
+	"net/http"
 	"path"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	apiserver "github.com/mateuszmidor/FlightFinder/cmd/finder_web/app/apiserver/go"
 	"github.com/mateuszmidor/FlightFinder/pkg/application"
+	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure"
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure/aws"
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure/csv"
 )
 
-func Run(http_port, flights_data_dir, web_data_dir string, metrics application.MetricsClient) {
+func Run(http_port, flights_data_dir, web_data_dir string, metrics application.MetricsClient, cache infrastructure.CacheClient) {
 	router := gin.Default()
 	router.LoadHTMLGlob(path.Join(web_data_dir, "*.html"))
 	router.StaticFile("favicon.ico", path.Join(web_data_dir, "favicon.ico"))
@@ -20,19 +22,42 @@ func Run(http_port, flights_data_dir, web_data_dir string, metrics application.M
 	router.Use(finder(flights_data_dir))
 	router.Use(airports(flights_data_dir))
 	for _, r := range apiserver.GetRoutes() {
-		handler := handlerWithMetrics(metrics, r.Method, r.Pattern, r.HandlerFunc)
+		// raw handler
+		handler := r.HandlerFunc
+
+		// add caching
+		handler = handlerWithCache(cache, r.Method, handler)
+
+		// add metrics
+		handler = handlerWithMetrics(metrics, r.Method, r.Pattern, handler)
+
+		// register
 		router.Handle(r.Method, r.Pattern, handler)
 	}
 	log.Fatal(router.Run(":" + http_port))
 }
 
 func MakeMetricsClient(aws_region string) application.MetricsClient {
+	log.Print("Initializing AWS CloudWatch as metrics client...")
 	var client application.MetricsClient
 	client, err := aws.NewMetricsClient(aws_region)
 	if err != nil {
-		log.Printf("AWS CloudWatch not available, will push no metrics. Error: %v", err)
-		client = &application.NullMericsClient{}
+		log.Printf("AWS CloudWatch not available - will not push metrics. Error: %v", err)
+		return &application.NullMericsClient{}
 	}
+	log.Print("Done.")
+	return client
+}
+
+func MakeCacheClient(addr, pass string) infrastructure.CacheClient {
+	log.Print("Initializing Redis as cache client...")
+	var client infrastructure.CacheClient
+	client, err := aws.NewCacheClient(addr, pass, time.Duration(0))
+	if err != nil {
+		log.Printf("Redis not available - will not cache search results. Error: %v", err)
+		return &infrastructure.NullCacheClient{}
+	}
+	log.Print("Done.")
 	return client
 }
 
@@ -43,6 +68,13 @@ func handlerWithMetrics(metrics application.MetricsClient, method string, patter
 		duration := time.Since(start)
 		metrics.PutRequestMetrics(pattern, method, duration)
 	}
+}
+
+func handlerWithCache(cache infrastructure.CacheClient, method string, handler gin.HandlerFunc) gin.HandlerFunc {
+	if method == http.MethodGet {
+		return cache.CachePage(handler)
+	}
+	return handler
 }
 
 func allowLocalSwaggerPreviewCORS(c *gin.Context) {

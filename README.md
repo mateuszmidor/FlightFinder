@@ -1,19 +1,21 @@
 # Flight Finder
 
-Find flight connections between two given airports.  
-Using OpenAPI3 + go-gin-server generator.  
-Using gin-gonic web framework.   
-Using AWS CloudWatch Metrics (default region `us-east-1`):
-- this requires `cloudwatch:PutMetricData` IAM permission or no metrics will be sent
-- if configured, generates metrics in `FlightFinder` CloudWatch Merics namespace
+Find flight connections between two given airports:  
+- Using OpenAPI3 + go-gin-server generator.  
+- Using gin-gonic web framework.   
+- Using Redis for connections cache
+- Using AWS CloudWatch for metrics:
+  - this requires `cloudwatch:PutMetricData` IAM permission assigned on your machine/EC2 or no metrics will be sent
+  - if configured correctly, generates metrics in `FlightFinder` CloudWatch Merics namespace
 
-## Run locally from source
+## Run locally from source (with connections cache)
 
 ```sh
-go run cmd/finder_web/main.go -port=8080 -flights_data=./assets -web_data=./web -aws_region=us-east-1
+./redis_cache/run_redis_cache.sh &  
+go run cmd/finder_web/main.go -port=8080 -flights_data=./assets -web_data=./web -aws_region=us-east-1 -redis_addr=localhost:6379 -redis_pass=CACHE
 ```
 
-## Run locally with docker
+## Run locally with docker (without connections cache)
 
 ```sh
 docker build . -t mateuszmidor/flight-finder:latest
@@ -67,7 +69,7 @@ systemctl status flight-finder
     What BeanStalk does with your code uploaded as ZIP archive:
     - unzip the archive files
     - `go build application.go && ./application`
-    - expose the application on port 5000
+    - map host port 80 to application port 5000
 
     , so you just need to make a ZIP archive with the app and use it for creating BeanStalk application in AWS Console:
 
@@ -77,8 +79,8 @@ systemctl status flight-finder
 - using platform Docker  
     What BeanStalk does with your code uploaded as ZIP archive:
     - unzip the archive files
-    - `docker build . -t flight-finder`
-    - `docker run -p=80:80 flight-finder`
+    - `docker build . -t server`
+    - `docker run -p=80:80 server`
 
     , so you just need to make a ZIP archive with the app and use it for creating BeanStalk application in AWS Console:
     ```sh
@@ -87,9 +89,10 @@ systemctl status flight-finder
 
 ## Deploy using AWS CodeDeploy
 
-```sh
-./aws_codedeploy/deploy.sh
-```
+- first setup variables in the script, then:
+    ```sh
+    ./aws_codedeploy/deploy.sh
+    ```
 
 ## API
 

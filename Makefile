@@ -18,7 +18,7 @@ runcli: ${APISERVER}
 	go run cmd/finder_cli/main.go -flights_data=./assets
 
 runweb: ${APISERVER}
-	GIN_MODE=release  go run cmd/finder_web/main.go -port=8080 -flights_data=./assets -web_data=./web -aws_region=us-east-1 -redis_addr=localhost:6379 -redis_pass=CACHE
+	GIN_MODE=release  go run cmd/finder_web/main.go -port=8080 -flights_data=./assets -web_data=./web -aws_region=us-east-1 -aws_xray=false -redis_addr=localhost:6379 -redis_pass=CACHE
 
 buildweb: ${WEBSERVER}
 ${WEBSERVER}: ${APISERVER}

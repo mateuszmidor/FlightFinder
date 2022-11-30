@@ -12,10 +12,12 @@ import (
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure"
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure/aws"
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure/csv"
+	"github.com/oroshnivskyy/go-gin-aws-x-ray/xray"
 )
 
-func Run(http_port, flights_data_dir, web_data_dir string, metrics application.MetricsClient, cache infrastructure.CacheClient) {
+func Run(http_port, flights_data_dir, web_data_dir string, metrics application.MetricsClient, tracing application.TracingClient, cache infrastructure.CacheClient) {
 	router := gin.Default()
+	router.Use(tracing)
 	router.LoadHTMLGlob(path.Join(web_data_dir, "*.html"))
 	router.StaticFile("favicon.ico", path.Join(web_data_dir, "favicon.ico"))
 	router.Use(allowLocalSwaggerPreviewCORS)
@@ -49,6 +51,14 @@ func MakeMetricsClient(aws_region string) application.MetricsClient {
 	return client
 }
 
+func MakeTracingClient(enabled bool) application.TracingClient {
+	if enabled {
+		return xray.Middleware(nil)
+	} else {
+		return application.NullTracingClient
+	}
+}
+
 func MakeCacheClient(addr, pass string) infrastructure.CacheClient {
 	log.Print("Initializing Redis as cache client...")
 	var client infrastructure.CacheClient
@@ -67,6 +77,13 @@ func handlerWithMetrics(metrics application.MetricsClient, method string, patter
 		handler(c)
 		duration := time.Since(start)
 		metrics.PutRequestMetrics(pattern, method, duration)
+	}
+}
+
+func handlerWithTracing(tracing application.TracingClient, handler gin.HandlerFunc) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		handler(c)
+		tracing(c)
 	}
 }
 

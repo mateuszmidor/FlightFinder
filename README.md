@@ -94,6 +94,34 @@ systemctl status flight-finder
     ./aws_codedeploy/deploy.sh
     ```
 
+
+## Enable AWS X-Ray
+
+Attach IAM Policy `AWSXRayDaemonWriteAccess` to EC2 Instance Profile, then install&run xray daemon on EC2 instance, and run with `-aws_xray=true`
+
+```sh
+curl https://s3.us-east-2.amazonaws.com/aws-xray-assets.us-east-2/xray-daemon/aws-xray-daemon-3.x.rpm -o /home/ec2-user/xray.rpm
+sudo yum install -y /home/ec2-user/xray.rpm
+pgrep xray # check if xray is running
+```
+XRAY daemon:
+- config: /etc/amazon/xray/cfg.yaml
+- run command: /usr/bin/xray -f /var/log/xray/xray.log
+
+
+Logs:
+```log
+2022-11-30T17:16:39Z [Info] Initializing AWS X-Ray daemon 3.3.5
+2022-11-30T17:16:39Z [Info] Using buffer memory limit of 9 MB
+2022-11-30T17:16:39Z [Info] 144 segment buffers allocated
+2022-11-30T17:16:39Z [Info] Using region: us-east-1
+2022-11-30T17:16:39Z [Info] HTTP Proxy server using X-Ray Endpoint : https://xray.us-east-1.amazonaws.com
+2022-11-30T17:16:39Z [Info] Starting proxy http server on 127.0.0.1:2000
+2022-11-30T18:39:50Z [Info] Successfully sent batch of 1 segments (0.029 seconds)
+2022-11-30T18:40:21Z [Info] Successfully sent batch of 1 segments (0.012 seconds)
+```
+
+
 ## API
 
 - list all airports

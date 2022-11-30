@@ -15,7 +15,11 @@ S3_KEY="FlightFinder.zip" # existing object will be overridden
 APP_NAME="FlightFinder" # application in CodeDeploy must exist
 DEPLOYMENT_GROUP_NAME="FlightFinderDeployGroup" # deployment group in CodeDeploy must exist
 
+# configure aws cli
+export AWS_PROFILE=rozneg
+export AWS_DEFAULT_REGION=us-east-1
 
+# do the job!
 echo "Deploying FlightFinder to AWS CodeDeploy"
 echo
 

@@ -115,22 +115,25 @@ func fromAirport(a airports.Airport) Airport {
 func find(finder *application.ConnectionFinder, c *gin.Context) {
 	from := getFromAirportCode(c.Request)
 	to := getToAirportCode(c.Request)
-	maxSegmentCount := getMaxSegmentsCount(c.Request)
-	log.Printf("%s -> %s...\n", from, to)
+	segmentLimit := getMaxSegmentsCount(c.Request)
+	log.Printf("%s -> %s (segment limit: %d)...", from, to, segmentLimit)
 
 	buff := &bytes.Buffer{}
 	pathRenderer := NewPathRendererAsJSON(buff)
-	err := finder.Find(from, to, maxSegmentCount, pathRenderer)
+	err := finder.Find(from, to, segmentLimit, pathRenderer)
 
 	// FIND ERROR
 	if err != nil {
-		log.Printf("%s -> %s: ERROR: %v\n", from, to, err)
+		log.Printf("%s -> %s: ERROR: %v", from, to, err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, errorToJSON(err))
 		return
 	}
 
 	// FIND OK
-	log.Printf("%s -> %s: OK\n", from, to)
+	numConnections := strings.Count(buff.String(), "from_airport")
+	log.Printf("%s -> %s: %d connections found (segment limit: %d)", from, to, numConnections, segmentLimit)
+
+	// return connections
 	c.Data(200, "application/json", buff.Bytes())
 }
 

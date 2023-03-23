@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/mateuszmidor/FlightFinder/cmd/finder_web/app"
+	"github.com/mateuszmidor/FlightFinder/cmd/finder_web/webapp"
 )
 
 func main() {
@@ -19,5 +19,9 @@ func main() {
 	redis_pass := flag.String("redis_pass", "CACHE", "-redis_pass=CACHE")
 	flag.Parse()
 
-	app.Run(*port, *flights_data_dir, *web_data_dir, app.MakeMetricsClient(*aws_region), app.MakeTracingClient(*aws_xray), app.MakeCacheClient(*redis_addr, *redis_pass))
+	webapp.Run(*port, *flights_data_dir, *web_data_dir,
+		webapp.MakeMetricsClient(*aws_region),
+		webapp.MakeTracingClient(*aws_xray),
+		webapp.MakeCacheClient(*redis_addr, *redis_pass),
+	)
 }

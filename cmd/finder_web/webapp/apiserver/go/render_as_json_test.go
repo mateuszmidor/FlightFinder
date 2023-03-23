@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	apiserver "github.com/mateuszmidor/FlightFinder/cmd/finder_web/app/apiserver/go"
+	apiserver "github.com/mateuszmidor/FlightFinder/cmd/finder_web/webapp/apiserver/go"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/airports"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/carriers"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/geo"

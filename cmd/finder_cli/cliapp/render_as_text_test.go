@@ -1,10 +1,10 @@
-package app_test
+package cliapp_test
 
 import (
 	"bytes"
 	"testing"
 
-	"github.com/mateuszmidor/FlightFinder/cmd/finder_cli/app"
+	"github.com/mateuszmidor/FlightFinder/cmd/finder_cli/cliapp"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/airports"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/carriers"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/geo"
@@ -50,7 +50,7 @@ func TestPathRendererTurnsEmptyPathsIntoEmptyPathString(t *testing.T) {
 	paths := []pathfinding.Path{}
 	expected := ""
 	buf := bytes.NewBuffer([]byte{})
-	pathRenderer := app.NewPathRendererAsText(buf, "")
+	pathRenderer := cliapp.NewPathRendererAsText(buf, "")
 
 	// when
 	pathRenderer.Render(paths, &flightData)
@@ -70,7 +70,7 @@ func TestPathRendererTurnsValidSinglePathIntoValidPathString(t *testing.T) {
 	paths := []pathfinding.Path{path}
 	expected := "airport1-(red)-airport2-(green)-airport3-(blue)-airport4"
 	buf := bytes.NewBuffer([]byte{})
-	pathRenderer := app.NewPathRendererAsText(buf, "")
+	pathRenderer := cliapp.NewPathRendererAsText(buf, "")
 
 	// when
 	pathRenderer.Render(paths, &flightData)
@@ -95,7 +95,7 @@ func TestPathRendererTurnsValidMultiplePathsIntoValidPathString(t *testing.T) {
 	paths := []pathfinding.Path{path1, path2}
 	expected := "airport1-(red)-airport2-(green)-airport3-(blue)-airport4,airport4-(fuchsia)-airport1-(red)-airport2-(green)-airport3"
 	buf := bytes.NewBuffer([]byte{})
-	pathRenderer := app.NewPathRendererAsText(buf, ",")
+	pathRenderer := cliapp.NewPathRendererAsText(buf, ",")
 
 	// when
 	pathRenderer.Render([]pathfinding.Path{path1, path2}, &flightData)

@@ -10,28 +10,29 @@ import (
 
 var NotFoundError = errors.New("not found error")
 
-type Airports struct {
+// AirportFinder allows for various searches in airport list
+type AirportFinder struct {
 	flightsData infrastructure.FlightsData
 }
 
-func NewAirports(repo infrastructure.FlightsDataRepo) *Airports {
+func NewAirports(repo infrastructure.FlightsDataRepo) *AirportFinder {
 	flightsData := repo.Load()
-	return &Airports{flightsData: flightsData}
+	return &AirportFinder{flightsData: flightsData}
 }
 
-func (a *Airports) ByIATACode(code string) (airports.Airport, error) {
-	id :=  a.flightsData.Airports.GetByCode(code)
+func (a *AirportFinder) ByIATACode(code string) (airports.Airport, error) {
+	id := a.flightsData.Airports.GetByCode(code)
 	if id == airports.NullID {
-		return airports.Airport{}, fmt.Errorf("airport IATA code %q not found: %w",code, NotFoundError)
+		return airports.Airport{}, fmt.Errorf("airport IATA code %q not found: %w", code, NotFoundError)
 	}
 	return a.flightsData.Airports.Get(id), nil
-} 
+}
 
-func (a *Airports) AllAirports() airports.Airports {
+func (a *AirportFinder) AllAirports() airports.Airports {
 	return a.flightsData.Airports
 }
 
-func (a *Airports) AirportsByCountry(twoLettersCode string) airports.Airports {
+func (a *AirportFinder) AirportsByCountry(twoLettersCode string) airports.Airports {
 	result := make(airports.Airports, 0)
 	for _, airport := range a.flightsData.Airports {
 		if airport.Name() == twoLettersCode {

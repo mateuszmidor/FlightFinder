@@ -1,4 +1,4 @@
-package app
+package webapp
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	apiserver "github.com/mateuszmidor/FlightFinder/cmd/finder_web/app/apiserver/go"
+	apiserver "github.com/mateuszmidor/FlightFinder/cmd/finder_web/webapp/apiserver/go"
 	"github.com/mateuszmidor/FlightFinder/pkg/application"
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure"
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure/aws"

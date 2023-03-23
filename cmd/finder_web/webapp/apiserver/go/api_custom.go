@@ -32,7 +32,7 @@ func GetAirportByIATACode(c *gin.Context) {
 		return
 	}
 
-	airportsSVC, ok := _airportsSVC.(*application.Airports)
+	airportsSVC, ok := _airportsSVC.(*application.AirportFinder)
 	if !ok {
 		err := fmt.Errorf("airports svc is of wrong type: %T", _airportsSVC)
 		log.Print(err)
@@ -68,7 +68,7 @@ func GetAirports(c *gin.Context) {
 		return
 	}
 
-	airportsSVC, ok := _airportsSVC.(*application.Airports)
+	airportsSVC, ok := _airportsSVC.(*application.AirportFinder)
 	if !ok {
 		err := fmt.Errorf("airports svc is of wrong type: %T", _airportsSVC)
 		log.Print(err)
@@ -100,7 +100,7 @@ func FindFromToConnection(c *gin.Context) {
 	find(finder, c)
 }
 
-func getAirports(svc *application.Airports, c *gin.Context) {
+func getAirports(svc *application.AirportFinder, c *gin.Context) {
 	airports := []Airport{}
 	for _, a := range svc.AllAirports() {
 		airports = append(airports, fromAirport(a))

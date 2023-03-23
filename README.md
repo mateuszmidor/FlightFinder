@@ -149,7 +149,7 @@ Logs:
 
 ## Structure
 
-![Logo](website/structure.png)
+![Logo](docs/component.png)
 
 ## Sequence
 

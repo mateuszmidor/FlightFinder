@@ -147,10 +147,10 @@ Logs:
 
 ## Design
 
-## Structure
+### Structure
 
 ![Logo](docs/component.png)
 
-## Sequence
+### Sequence
 
-![Logo](website/sequence.png)
+![Logo](docs/sequence.png)

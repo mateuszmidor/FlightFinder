@@ -1,6 +1,7 @@
 @startuml sequence
 
-title ApiServer
+title webapp
+
 hide footbox
 ' skinparam handwritten true
 ' skinparam monochrome true
@@ -8,13 +9,43 @@ hide footbox
 '
 actor http_client as client
 
+' actor httpserver as gin
+' actor init
+' init -> httpserver: Run
+' httpserver -> gin.Engine: configure middleware
+' httpserver -> gin.Engine: configure routes
+' httpserver -> gin.Engine: Run()
 
-client -> apiserver: GET /api/find
-activate apiserver
-    alt 200 OK
-        client <-- apiserver: result
-    else 400 Bad Request
-        client <-- apiserver: error
-    end
-deactivate
+group Finding connections
+    client -> gin.Engine: GET /api/find?...
+    activate gin.Engine
+        gin.Engine -> ConnectionFinder: Find(from, to)
+        activate ConnectionFinder
+            ConnectionFinder -> PathFinding: paths =  FindPaths(from, to)
+            ConnectionFinder -> PathRenderer: Render(paths, flightsData)
+        return
+    return connections as JSON
+end 
+
+group Finding airport
+    client -> gin.Engine: GET /api/airports/GDN
+    activate gin.Engine
+        gin.Engine -> AirportFinder: ByIATACode(code)
+    return client <-- gin.Engine: airport as JSON
+end
+
+group Listing airports
+    client -> gin.Engine: GET /api/airports
+    activate gin.Engine
+        gin.Engine -> AirportFinder: AllAirports()
+    return client <-- gin.Engine: airports as JSON
+end
+
+' activate apiserver
+'     alt 200 OK
+'         client <-- apiserver: result
+'     else 400 Bad Request
+'         client <-- apiserver: error
+'     end
+' deactivate
 @enduml

@@ -15,7 +15,7 @@ type AirportFinder struct {
 	flightsData infrastructure.FlightsData
 }
 
-func NewAirports(repo infrastructure.FlightsDataRepo) *AirportFinder {
+func NewAirportFinder(repo infrastructure.FlightsDataRepo) *AirportFinder {
 	flightsData := repo.Load()
 	return &AirportFinder{flightsData: flightsData}
 }

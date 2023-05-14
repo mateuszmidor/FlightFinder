@@ -111,7 +111,7 @@ func finder(csv_dir string) func(*gin.Context) {
 
 func airports(csv_dir string) func(*gin.Context) {
 	repo := csv.NewFlightsDataRepoCSV(csv_dir)
-	airports := application.NewAirports(repo)
+	airports := application.NewAirportFinder(repo)
 
 	return func(c *gin.Context) {
 		c.Set("airports", airports)

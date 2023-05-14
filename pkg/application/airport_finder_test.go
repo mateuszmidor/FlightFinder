@@ -33,7 +33,7 @@ func (stubRepo) Load() infrastructure.FlightsData {
 func TestAllAirportsReturnsAll(t *testing.T) {
 	// given
 	expected := airports.Airports{KRK, GDN, CUZ, LIM}
-	svc := application.NewAirports(stubRepo{})
+	svc := application.NewAirportFinder(stubRepo{})
 
 	// when
 	actual := svc.AllAirports()
@@ -46,7 +46,7 @@ func TestAirportsByCountryReturnsAllMatchingAirports(t *testing.T) {
 	// given
 	expectedPL := airports.Airports{KRK, GDN}
 	expectedPE := airports.Airports{LIM, CUZ}
-	svc := application.NewAirports(stubRepo{})
+	svc := application.NewAirportFinder(stubRepo{})
 
 	// when
 	actualPL := svc.AirportsByCountry("PL")

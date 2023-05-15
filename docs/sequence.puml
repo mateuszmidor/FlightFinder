@@ -31,14 +31,14 @@ group Finding airport
     client -> gin.Engine: GET /api/airports/GDN
     activate gin.Engine
         gin.Engine -> AirportFinder: ByIATACode(code)
-    return client <-- gin.Engine: airport as JSON
+    return airport as JSON
 end
 
 group Listing airports
     client -> gin.Engine: GET /api/airports
     activate gin.Engine
         gin.Engine -> AirportFinder: AllAirports()
-    return client <-- gin.Engine: airports as JSON
+    return airports as JSON
 end
 
 ' activate apiserver

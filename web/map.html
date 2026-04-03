@@ -74,7 +74,6 @@
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
     <!-- jQuery library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
@@ -86,12 +85,16 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
 
-    <!-- WebGL -->
-    <script src="https://www.webglearth.com/v2/api.js"></script>
+    <!-- CesiumJS -->
+    <script>
+        window.CESIUM_BASE_URL = 'https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/';
+    </script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.123/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 
     <!-- My page scripting -->
     <script type="text/javascript">
-        var earth = null
+        var viewer = null
         var jsonPaths = null
 
         //<![CDATA[
@@ -101,44 +104,102 @@
 
         function createEarthMap() {
             $("#mapContainer").html('')
-            var options = { zoom: 3.0, position: [0, 0] };
-            earth = new WE.map('mapContainer', options);
-            WE.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(earth);
+            Cesium.Ion.defaultAccessToken = null;
+            viewer = new Cesium.Viewer('mapContainer', {
+                baseLayer: false,
+                baseLayerPicker: false,
+                geocoder: false,
+                homeButton: false,
+                sceneModePicker: false,
+                selectionIndicator: false,
+                timeline: false,
+                animation: false,
+                fullscreenButton: false,
+                navigationHelpButton: false,
+                shouldAnimate: false,
+            });
+            viewer.scene.globe.enableLighting = false;
+            viewer.imageryLayers.addImageryProvider(
+                new Cesium.UrlTemplateImageryProvider({
+                    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    subdomains: 'abc',
+                    minimumLevel: 0,
+                    maximumLevel: 19
+                })
+            );
         }
 
-        // function renderPathAsHTML(paths) {
-        //     // clear path list
-        //     $( "#pathsContainer" ).html("");
+        function getRandomColor() {
+            return Cesium.Color.fromRandom({ alpha: 0.9 });
+        }
 
-        //     // render paths
-        //     $.each(paths, function( index, value ) {
-        //         // $( "#pathsContainer" ).append(value.from_airport.name);
-        //         // // var points = [[paths[0].from_airport.lat, paths[0].from_airport.lon]]
+        function addAirportMarker(code, name, nationFullName, lon, lat, color) {
+            color = color || Cesium.Color.RED;
+            var entity = viewer.entities.add({
+                name: code,
+                position: Cesium.Cartesian3.fromDegrees(lon, lat),
+                billboard: {
+                    image: createAirportPinCanvas(color),
+                    width: 24,
+                    height: 32,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                },
+                label: {
+                    text: code,
+                    font: 'bold 12px sans-serif',
+                    fillColor: Cesium.Color.WHITE,
+                    outlineColor: Cesium.Color.BLACK,
+                    outlineWidth: 2,
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    pixelOffset: new Cesium.Cartesian2(0, -32),
+                },
+                description: '<strong>' + code + '</strong><br>' + name + ', ' + nationFullName,
+            });
+            return entity;
+        }
 
-        //         // $.each(value.segments, function( index, value ) {
-        //         //     $( "#pathsContainer" ).append("-").append("<strong>("+value.carrier.code+")</strong>"); 
-        //         //     $( "#pathsContainer" ).append("-").append(value.to_airport.name); 
-        //         // //   points.push([value.to_airport.lat, value.to_airport.lon])
+        function createAirportPinCanvas(color) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 24;
+            canvas.height = 32;
+            var ctx = canvas.getContext('2d');
+            var r = Math.floor(color.red * 255);
+            var g = Math.floor(color.green * 255);
+            var b = Math.floor(color.blue * 255);
+            ctx.beginPath();
+            ctx.moveTo(12, 32);
+            ctx.bezierCurveTo(12, 24, 0, 16, 0, 10);
+            ctx.arc(12, 10, 12, Math.PI, 0, false);
+            ctx.bezierCurveTo(24, 16, 12, 24, 12, 32);
+            ctx.closePath();
+            ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(12, 10, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            return canvas.toDataURL();
+        }
 
-        //         //     // var marker = WE.marker([value.to_airport.lat, value.to_airport.lon]).addTo(earth);
-        //         //     // marker.bindPopup(value.to_airport.name + '-' + value.to_airport.code, {maxWidth: 120, closeButton: false});
-        //         // });
-        //         var htmlPath = renderJSONPathAsHTML(value)
-        //         $( "#pathsContainer" ).append(htmlPath).append("<br>") 
-
-
-        //         // points.push([value.segments[0].to_airport.lat, value.segments[0].to_airport.lon])
-        //         // var polygonA = WE.polygon(points,  {
-        //             //     color: '#' + Math.floor(Math.random()*16777215).toString(16),
-        //             //     opacity: 1,
-        //             //     fillColor: '#f00',
-        //             //     fillOpacity: 0.0,
-        //             //     editable: false,
-        //             //     weight: 1
-        //             // }); 
-        //             // polygonA.addTo(earth);           
-        //         });
-        // }
+        function addFlightPathSegment(fromLon, fromLat, toLon, toLat, color, width) {
+            color = color || Cesium.Color.RED;
+            width = width || 3;
+            viewer.entities.add({
+                polyline: {
+                    positions: Cesium.Cartesian3.fromDegreesArrayHeights([
+                        fromLon, fromLat, 0,
+                        toLon, toLat, 0
+                    ]),
+                    width: width,
+                    material: new Cesium.PolylineGlowMaterialProperty({
+                        glowPower: 0.15,
+                        color: color,
+                    }),
+                    arcType: Cesium.ArcType.GEODESIC,
+                },
+            });
+        }
 
         function helo(index) {
             alert(`clicked path no. ${index}`)
@@ -151,20 +212,30 @@
         function showPath(pathIndex) {
             createEarthMap()
             var uniqueAirports = new Map();
+            var airportList = [];
 
             value = jsonPaths[pathIndex]
             uniqueAirports.set(value.from_airport.code, value.from_airport)
+            airportList.push(value.from_airport)
 
             $.each(value.segments, function (index, value) {
                 uniqueAirports.set(value.to_airport.code, value.to_airport)
+                airportList.push(value.to_airport)
             });
 
-            // actually add unique airports to map
             for (const airport of uniqueAirports.values()) {
-                var marker = WE.marker([airport.lat, airport.lon]).addTo(earth);
-                marker.bindPopup('<strong>' + airport.code + '</strong><br>' + airport.name + ', ' + airport.nation_full_name, { maxWidth: 120, closeButton: false });
-                // console.log(el);
+                addAirportMarker(airport.code, airport.name, airport.nation_full_name, airport.lon, airport.lat, Cesium.Color.RED);
             }
+
+            for (var i = 0; i < airportList.length - 1; i++) {
+                addFlightPathSegment(
+                    airportList[i].lon, airportList[i].lat,
+                    airportList[i + 1].lon, airportList[i + 1].lat,
+                    Cesium.Color.RED, 4
+                );
+            }
+
+            viewer.zoomTo(viewer.entities);
         }
 
         function renderJSONPathsAsHTML(paths) {
@@ -197,37 +268,40 @@
                 $.each(value.segments, function (index, value) {
                     uniqueAirports.set(value.to_airport.code, value.to_airport)
                 });
-
-
-                // points.push([value.segments[0].to_airport.lat, value.segments[0].to_airport.lon])
-                // var polygonA = WE.polygon(points,  {
-                //     color: '#' + Math.floor(Math.random()*16777215).toString(16),
-                //     opacity: 1,
-                //     fillColor: '#f00',
-                //     fillOpacity: 0.0,
-                //     editable: false,
-                //     weight: 1
-                // }); 
-                // polygonA.addTo(earth);           
             });
-            // actually add unique airports to map
+
             for (const airport of uniqueAirports.values()) {
-                var marker = WE.marker([airport.lat, airport.lon]).addTo(earth);
-                marker.bindPopup('<strong>' + airport.code + '</strong><br>' + airport.name + ', ' + airport.nation_full_name, { maxWidth: 120, closeButton: false });
-                // console.log(el);
+                addAirportMarker(airport.code, airport.name, airport.nation_full_name, airport.lon, airport.lat);
             }
+
+            $.each(paths, function (index, path) {
+                var airportList = [];
+                airportList.push(path.from_airport)
+                $.each(path.segments, function (segIndex, segment) {
+                    airportList.push(segment.to_airport)
+                });
+
+                var color = getRandomColor();
+                for (var i = 0; i < airportList.length - 1; i++) {
+                    addFlightPathSegment(
+                        airportList[i].lon, airportList[i].lat,
+                        airportList[i + 1].lon, airportList[i + 1].lat,
+                        color, 3
+                    );
+                }
+            });
+
+            viewer.zoomTo(viewer.entities);
         }
 
         function markAirportsListOnEarth(airports) {
             createEarthMap()
-            var uniqueAirports = new Map();
 
-            // actually add unique airports to map
             for (const airport of airports) {
-                var marker = WE.marker([airport.lat, airport.lon]).addTo(earth);
-                marker.bindPopup('<strong>' + airport.code + '</strong><br>' + airport.name + ', ' + airport.nation_full_name, { maxWidth: 120, closeButton: false });
-                // console.log(el);
+                addAirportMarker(airport.code, airport.name, airport.nation_full_name, airport.lon, airport.lat);
             }
+
+            viewer.zoomTo(viewer.entities);
         }
 
 
@@ -239,7 +313,6 @@
 
         function setAirportsResults(airports) {
             jsonAirports = airports
-            // renderJSONPathsAsHTML(paths)
             markAirportsListOnEarth(airports)
         }
 

@@ -1,14 +1,14 @@
-APISERVER = ./cmd/finder_web/app/apiserver/go/routers.go
+APISERVER = ./cmd/finder_web/webapp/apiserver/go/routers.go
 WEBSERVER = ./server
 
 default: ${APISERVER}
 
-docker: 
+docker:
 	docker build . -t flight-finder:latest
-	
-rundocker: 
+
+rundocker:
 	docker run --rm --name=flight-finder -p 8080:80 -v $HOME/.aws:/root/.aws flight-finder:latest
-	
+
 pushdocker:
 	docker login -u mateuszmidor -p <pass>
 	docker build . -t mateuszmidor/flight-finder:latest
@@ -40,6 +40,6 @@ ${APISERVER}: ./api/openapi3.yaml
 		-u $(shell id -u ${USER}):$(shell id -g ${USER}) \
 		-v "$(shell pwd):/build" \
 		--entrypoint=/bin/bash \
-		openapitools/openapi-generator-cli:latest -c "cd /build && scripts/build_openapi3.sh"
+		openapitools/openapi-generator-cli:v6.4.0 -c "cd /build && scripts/build_openapi3.sh"
 
 .PHONY: default docker rundocker runcli runweb  buildweb test

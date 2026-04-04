@@ -193,13 +193,24 @@
             return canvas.toDataURL();
         }
 
-        function addFlightPathSegment(fromLon, fromLat, toLon, toLat, color, width, distanceKm) {
+        function addFlightPathSegment(fromLon, fromLat, toLon, toLat, color, width, distanceKm, fromCode, fromName, fromNation, toCode, toName, toNation) {
             color = color || Cesium.Color.RED;
             width = width || 3;
+
+            // make description
             var description = '';
-            if (typeof distanceKm !== 'undefined' && distanceKm !== null) {
-                description = '<strong>Distance:</strong> ' + distanceKm.toFixed(2) + ' km';
+            var fromDetail = fromName || '';
+            if (fromNation) {
+                fromDetail += (fromDetail ? ', ' : '') + fromNation;
             }
+            description += '<strong>From:</strong> ' + fromCode + ' (' + fromDetail + ')<br>';
+            var toDetail = toName || '';
+            if (toNation) {
+                toDetail += (toDetail ? ', ' : '') + toNation;
+            }
+            description += '<strong>To:</strong> ' + toCode + ' (' + toDetail + ')<br>';
+            description += '<strong>Distance:</strong> ' + distanceKm.toFixed(2) + ' km';
+
             viewer.entities.add({
                 polyline: {
                     positions: Cesium.Cartesian3.fromDegreesArrayHeights([
@@ -208,7 +219,7 @@
                     ]),
                     width: width,
                     material: new Cesium.PolylineGlowMaterialProperty({
-                        glowPower: 0,//0.15,
+                        glowPower: 0.15,
                         color: color,
                     }),
                     arcType: Cesium.ArcType.GEODESIC,
@@ -249,7 +260,9 @@
                     airportList[i].lon, airportList[i].lat,
                     airportList[i + 1].lon, airportList[i + 1].lat,
                     Cesium.Color.RED, 4,
-                    segment.distance_km
+                    segment.distance_km,
+                    airportList[i].code, airportList[i].name, airportList[i].nation_full_name,
+                    airportList[i + 1].code, airportList[i + 1].name, airportList[i + 1].nation_full_name
                 );
             }
 
@@ -306,7 +319,9 @@
                         airportList[i].lon, airportList[i].lat,
                         airportList[i + 1].lon, airportList[i + 1].lat,
                         color, 3,
-                        segment.distance_km
+                        segment.distance_km,
+                        airportList[i].code, airportList[i].name, airportList[i].nation_full_name,
+                        airportList[i + 1].code, airportList[i + 1].name, airportList[i + 1].nation_full_name
                     );
                 }
             });

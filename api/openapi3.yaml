@@ -132,6 +132,10 @@ components:
           $ref: "#/components/schemas/Carrier"
         to_airport:
           $ref: "#/components/schemas/Airport"
+        distance_km:
+          type: number
+          format: float
+          example: 615.23
     Connection:
       type: object
       properties:

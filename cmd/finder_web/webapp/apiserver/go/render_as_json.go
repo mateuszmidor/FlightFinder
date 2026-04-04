@@ -45,10 +45,14 @@ func calcTotalDistance(path pathfinding.Path, flightsData *infrastructure.Flight
 
 func makeSegments(path pathfinding.Path, flightsData *infrastructure.FlightsData) []Segment {
 	segments := make([]Segment, len(path))
+	prevAirport := flightsData.Airports[flightsData.Segments[path[0]].From()]
 	for nSegment, sID := range path {
 		segment := flightsData.Segments[sID]
+		toAirport := flightsData.Airports[segment.To()]
 		segments[nSegment].Carrier = Carrier{Code: flightsData.Carriers[segment.Carrier()].Code()}
-		segments[nSegment].ToAirport = makeAirport(flightsData.Airports[segment.To()], flightsData.Nations)
+		segments[nSegment].ToAirport = makeAirport(toAirport, flightsData.Nations)
+		segments[nSegment].DistanceKm = geo.GreatCircleDistance(prevAirport.Latitude(), toAirport.Latitude(), prevAirport.Longitude(), toAirport.Longitude())
+		prevAirport = toAirport
 	}
 	return segments
 }

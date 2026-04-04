@@ -85,6 +85,7 @@ func TestPathRendererTurnsValidPathIntoValidPathJson(t *testing.T) {
 					Lon:            60.0,
 					Lat:            10.0,
 				},
+				DistanceKm: geo.GreatCircleDistance(19, 10, 49, 60),
 			},
 			{
 				Carrier: apiserver.Carrier{
@@ -98,6 +99,7 @@ func TestPathRendererTurnsValidPathIntoValidPathJson(t *testing.T) {
 					Lon:            51.0,
 					Lat:            21.0,
 				},
+				DistanceKm: geo.GreatCircleDistance(10, 21, 60, 51),
 			},
 		},
 	}

@@ -32,7 +32,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"                
+                $ref: "#/components/schemas/ErrorResponse"
   /api/airports:
     get:
       summary: IATA airport codes
@@ -141,6 +141,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Segment"
+        total_distance_km:
+          type: number
+          format: float
+          example: 1234.56
     ErrorResponse:
       type: object
       properties:

@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/airports"
+	"github.com/mateuszmidor/FlightFinder/pkg/domain/geo"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/nations"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/pathfinding"
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure"
@@ -25,8 +26,21 @@ func (r *PathRendererAsJSON) Render(paths []pathfinding.Path, flightsData *infra
 		airport0 := flightsData.Airports[segment0.From()]
 		connections[nConnection].FromAirport = makeAirport(airport0, flightsData.Nations)
 		connections[nConnection].Segments = makeSegments(path, flightsData)
+		connections[nConnection].TotalDistanceKm = calcTotalDistance(path, flightsData)
 	}
 	json.NewEncoder(r.writer).Encode(connections)
+}
+
+func calcTotalDistance(path pathfinding.Path, flightsData *infrastructure.FlightsData) float32 {
+	var total float32
+	prevAirport := flightsData.Airports[flightsData.Segments[path[0]].From()]
+	for _, sID := range path {
+		segment := flightsData.Segments[sID]
+		toAirport := flightsData.Airports[segment.To()]
+		total += geo.GreatCircleDistance(prevAirport.Latitude(), toAirport.Latitude(), prevAirport.Longitude(), toAirport.Longitude())
+		prevAirport = toAirport
+	}
+	return total
 }
 
 func makeSegments(path pathfinding.Path, flightsData *infrastructure.FlightsData) []Segment {

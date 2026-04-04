@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mateuszmidor/FlightFinder/pkg/application"
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/airports"
+	"github.com/mateuszmidor/FlightFinder/pkg/domain/nations"
 )
 
 func GetRoutes() Routes {
@@ -56,7 +57,7 @@ func GetAirportByIATACode(c *gin.Context) {
 	}
 
 	// FIND OK
-	c.JSON(200, fromAirport(airport))
+	c.JSON(200, fromAirport(airport, airportsSVC.Nations()))
 }
 
 func GetAirports(c *gin.Context) {
@@ -102,14 +103,23 @@ func FindFromToConnection(c *gin.Context) {
 
 func getAirports(svc *application.AirportFinder, c *gin.Context) {
 	airports := []Airport{}
+	nations := svc.Nations()
 	for _, a := range svc.AllAirports() {
-		airports = append(airports, fromAirport(a))
+		airports = append(airports, fromAirport(a, nations))
 	}
 	c.JSON(200, airports)
 }
 
-func fromAirport(a airports.Airport) Airport {
-	return Airport{Code: a.Code(), Name: a.Name(), Nation: a.Nation(), NationFullName: a.Nation(), Lon: float32(a.Longitude()), Lat: float32(a.Latitude())}
+func fromAirport(a airports.Airport, nationList nations.Nations) Airport {
+	id := nationList.GetByCode(a.Nation())
+	fullName := a.Nation()
+	if id != nations.NullID {
+		fullName = nationList[id].Name()
+	} else {
+		log.Printf("nation name not found for %+v", a)
+	}
+
+	return Airport{Code: a.Code(), Name: a.Name(), Nation: a.Nation(), NationFullName: fullName, Lon: float32(a.Longitude()), Lat: float32(a.Latitude())}
 }
 
 func find(finder *application.ConnectionFinder, c *gin.Context) {

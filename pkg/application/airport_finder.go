@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mateuszmidor/FlightFinder/pkg/domain/airports"
+	"github.com/mateuszmidor/FlightFinder/pkg/domain/nations"
 	"github.com/mateuszmidor/FlightFinder/pkg/infrastructure"
 )
 
@@ -30,6 +31,10 @@ func (a *AirportFinder) ByIATACode(code string) (airports.Airport, error) {
 
 func (a *AirportFinder) AllAirports() airports.Airports {
 	return a.flightsData.Airports
+}
+
+func (a *AirportFinder) Nations() nations.Nations {
+	return a.flightsData.Nations
 }
 
 func (a *AirportFinder) AirportsByCountry(twoLettersCode string) airports.Airports {

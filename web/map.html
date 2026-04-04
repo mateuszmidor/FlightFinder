@@ -135,6 +135,17 @@
 
         function addAirportMarker(code, name, nationFullName, lon, lat, color) {
             color = color || Cesium.Color.RED;
+            // validate the airport
+            if (typeof lon === 'undefined' || typeof lat === 'undefined') {
+                console.log("Airport marker invalid:", {
+                    code: code,
+                    name: name,
+                    nationFullName: nationFullName,
+                    lon: lon,
+                    lat: lat
+                });
+                return;
+            }
             var entity = viewer.entities.add({
                 name: code,
                 position: Cesium.Cartesian3.fromDegrees(lon, lat),
@@ -296,8 +307,9 @@
 
         function markAirportsListOnEarth(airports) {
             createEarthMap()
-
+            console.log("Number of airports:", airports.length);
             for (const airport of airports) {
+                console.log(`Airport #${airports.indexOf(airport)} code: ${airport.code}`);
                 addAirportMarker(airport.code, airport.name, airport.nation_full_name, airport.lon, airport.lat);
             }
 

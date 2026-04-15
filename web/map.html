@@ -29,14 +29,90 @@
         /* Create two columns that floats next to each other */
         .resultList {
             float: left;
-            width: 30%;
-            padding: 0px;
+            width: 20%;
+            padding: 0px 0px 0px 10px;
             height: 100%;
+            background-color: #f0f2f5 !important;
+            overflow-y: auto;
+        }
+
+        .flight-card {
+            cursor: pointer;
+            border: none;
+            border-left: 3px solid #007bff;
+            border-radius: 4px;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .flight-card:hover {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+            border-left-color: #0056b3;
+        }
+
+        .flight-card .card-body {
+            padding: 0.75rem 1rem;
+        }
+
+        .route-line {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.2rem;
+        }
+
+        .airport-code {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .airport-names {
+            font-size: 1.0rem;
+            font-weight: 400;
+            color: #6c757d;
+            margin-bottom: 0.3rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .route-arrow-line {
+            color: #007bff;
+            font-size: 1.0rem;
+            flex-shrink: 0;
+        }
+
+        .meta-line {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.05rem;
+            color: #6c757d;
+        }
+
+        .carrier-tag {
+            background: #e9ecef;
+            color: #495057;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 1.0rem;
+            letter-spacing: 0.3px;
+        }
+
+        .meta-divider {
+            color: #ced4da;
         }
 
         .rightPane {
             float: left;
-            width: 70%;
+            width: 80%;
             padding: 0px;
             height: 100%;
             position: relative;
@@ -222,8 +298,53 @@
             alert(`clicked path no. ${index}`)
         }
 
-        function makeItem(itemIndex) {
-            return `<a class="list-group-item list-group-item-action narrow-item" id="list-home-list" data-toggle="list" href="#list-home" role="tab" aria-controls="home" onclick="showPath(${itemIndex})" >`
+        function makeItem(itemIndex, path) {
+            var allAirports = [];
+            allAirports.push(path.from_airport);
+            $.each(path.segments, function (i, seg) {
+                allAirports.push(seg.to_airport);
+            });
+
+            var totalDist = 0;
+            var carriers = [];
+            $.each(path.segments, function (i, seg) {
+                totalDist += seg.distance_km;
+                if (carriers.indexOf(seg.carrier.code) === -1) {
+                    carriers.push(seg.carrier.code);
+                }
+            });
+
+            var carrierTags = '';
+            $.each(carriers, function (i, code) {
+                carrierTags += '<span class="carrier-tag">' + code + '</span>';
+            });
+
+            var segCount = path.segments.length;
+            var segLabel = segCount === 1 ? '1 stop' : segCount + ' stops';
+
+            var codeChain = '';
+            var nameChain = [];
+            $.each(allAirports, function (i, ap) {
+                if (i > 0) {
+                    codeChain += '<span class="route-arrow-line"> → </span>';
+                }
+                codeChain += '<span class="airport-code">' + ap.code + '</span>';
+                nameChain.push(ap.name);
+            });
+
+            return '<div class="card mb-2 flight-card" onclick="showPath(' + itemIndex + ')">' +
+                '<div class="card-body">' +
+                '<div class="route-line">' + codeChain + '</div>' +
+                '<div class="airport-names">' + nameChain.join(' · ') + '</div>' +
+                '<div class="meta-line">' +
+                carrierTags +
+                '<span class="meta-divider">·</span>' +
+                '<span>' + segLabel + '</span>' +
+                '<span class="meta-divider">·</span>' +
+                '<span>' + totalDist.toFixed(0) + ' km</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
         }
 
         function showPath(pathIndex) {
@@ -259,23 +380,38 @@
         }
 
         function renderJSONPathsAsHTML(paths) {
-            // clear paths
             $("#pathsContainer").html("");
-
-            // render paths
             $.each(paths, function (index, path) {
-                var htmlPath = renderJSONPathAsHTML(path)
-                $("#pathsContainer").append(makeItem(index) + htmlPath + "</a>")
+                $("#pathsContainer").append(makeItem(index, path));
             });
         }
 
         function renderJSONPathAsHTML(jsonPath) {
-            var htmlPath = jsonPath.from_airport.name
+            var carriers = [];
+            var lastSegment = null;
             $.each(jsonPath.segments, function (index, value) {
-                htmlPath += "-" + "<strong>(" + value.carrier.code + ")</strong>";
-                htmlPath += "-" + value.to_airport.name;
+                carriers.push(value.carrier.code);
+                lastSegment = value;
             });
-            return htmlPath
+
+            var origin = jsonPath.from_airport.code;
+            var destination = lastSegment ? lastSegment.to_airport.code : '';
+            var carrierBadges = '';
+            $.each(carriers, function (i, code) {
+                carrierBadges += '<span class="badge badge-info mr-1">' + code + '</span>';
+            });
+
+            var segCount = jsonPath.segments.length;
+            var totalDist = 0;
+            $.each(jsonPath.segments, function (i, seg) {
+                totalDist += seg.distance_km;
+            });
+
+            return origin + '<span class="route-arrow">→</span>' + destination +
+                '<div class="mt-1">' + carrierBadges +
+                '<span class="badge badge-primary">' + segCount + ' seg</span>' +
+                '<span class="badge badge-light ml-1">' + totalDist.toFixed(0) + ' km</span>' +
+                '</div>';
         }
 
         function markConnectionsOnEarth(paths) {
@@ -401,10 +537,8 @@
     <div class="container-fluid">
         <!-- RESULTS: LIST ON LEFT, MAP ON RIGHT -->
         <div class="row">
-            <div class="resultList" style="background-color:#aaa; overflow:auto;" id="pathsContainer2">
-                <div class="col-4" style="padding-left: 10px;">
-                    <div class="list-group " id="pathsContainer" role="tabl`ist">
-                    </div>
+            <div class="resultList" id="pathsContainer2">
+                <div class="p-2" id="pathsContainer">
                 </div>
             </div>
             <div class="rightPane" style="background-color:rgb(138, 128, 128);">

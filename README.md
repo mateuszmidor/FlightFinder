@@ -154,3 +154,5 @@ Logs:
 ### Sequence
 
 ![Logo](docs/sequence.png)
+
+[Detailed diagram for connection finding](./find_connection_seq.md)
